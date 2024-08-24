@@ -12,7 +12,7 @@ Conflicts: chillispot
 Provides: chillispot
 Depends:
  ${shlibs:Depends},
- iptables,
+ nftables,
  haserl,
  adduser,
 Suggests:

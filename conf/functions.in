@@ -5,7 +5,7 @@
 # http://coova.github.io/
 #
 
-IPTABLES=/sbin/iptables
+NFT=/usr/sbin/nft
 IFCONFIG=/sbin/ifconfig
 
 CHILLI=@ETCCHILLI@

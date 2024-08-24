@@ -1,59 +1,28 @@
+
 #!/bin/sh
-#
-# Firewall script for CoovaChilli on OpenWRT
-#
-# Uses $WANIF (vlan1) as the external interface (Internet or intranet) and
-# $WLANIF (eth1) as the internal interface (access point).
-# $LANIF is used as a trusted management interface.
-#
-# SUMMARY
-# * All connections originating from CoovaChilli are allowed.
-# * Nothing is allowed in on WAN interface.
-# * Nothing is allowed in on WLAN interface.
-# * Everything is allowed in on LAN interface.
-# * Forwarding is allowed to and from WAN interface, but disallowed
-#   to and from the WLAN interface.
-# * NAT is enabled on the WAN interface.
+# Example nftables firewall rules for OpenWRT
 
-. /etc/functions.sh
+nft flush ruleset
 
-WANIF=$(nvram_get wan_ifname)
-WLANIF="eth1"
-LANIF="br0"
+# Create a table for filtering
+nft add table inet filter
 
-NFT="/usr/sbin/nft"
+# Create input, forward, and output chains
+nft add chain inet filter input { type filter hook input priority 0 \; }
+nft add chain inet filter forward { type filter hook forward priority 0 \; }
+nft add chain inet filter output { type filter hook output priority 0 \; }
 
-for T in filter nat mangle ; do
-  $IPTABLES -t $T -F
-  $IPTABLES -t $T -X
-done
+# Allow established and related traffic
+nft add rule inet filter input ct state established,related accept
+nft add rule inet filter forward ct state established,related accept
+nft add rule inet filter output ct state established,related accept
 
-$IPTABLES -P INPUT DROP
-$IPTABLES -P FORWARD ACCEPT
-$IPTABLES -P OUTPUT ACCEPT
+# Allow loopback interface traffic
+nft add rule inet filter input iif lo accept
 
-#Allow related and established on all interfaces (input)
-$IPTABLES -A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT
+# Allow ICMP traffic for ping
+nft add rule inet filter input icmp type echo-request accept
 
-#Allow related and established $WANIF. Reject everything else.
-$IPTABLES -A INPUT -i $WANIF -j REJECT
-
-#Allow related and established $WLANIF. Drop everything else.
-$IPTABLES -A INPUT -i $WLANIF -j DROP
-
-#Allow 3990 on other interfaces (input).
-$IPTABLES -A INPUT -p tcp -m tcp --dport 3990 --syn -j ACCEPT
-
-#Allow everything on loopback interface.
-$IPTABLES -A INPUT -i lo -j ACCEPT
-
-#Allow everything on $LANIF
-$IPTABLES -A INPUT -i $LANIF -j ACCEPT
-
-#Drop everything to and from $WLANIF (forward)
-$IPTABLES -A FORWARD -i $WLANIF -j DROP
-$IPTABLES -A FORWARD -o $WLANIF -j DROP
-                             
-#Enable NAT on output device.
-$IPTABLES -t nat -A POSTROUTING -o $WANIF -j MASQUERADE
-
+# Drop everything else
+nft add rule inet filter input drop
+nft add rule inet filter forward drop

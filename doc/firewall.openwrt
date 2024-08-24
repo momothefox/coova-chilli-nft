@@ -21,7 +21,7 @@ WANIF=$(nvram_get wan_ifname)
 WLANIF="eth1"
 LANIF="br0"
 
-IPTABLES="/usr/sbin/iptables"
+NFT="/usr/sbin/nft"
 
 for T in filter nat mangle ; do
   $IPTABLES -t $T -F

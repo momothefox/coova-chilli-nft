@@ -15,7 +15,7 @@
 #   to and from the internal interface.
 # * NAT is enabled on the external interface.
 
-IPTABLES="/sbin/iptables"
+NFT="/usr/sbin/nft"
 EXTIF="eth0"
 INTIF="eth1"
 

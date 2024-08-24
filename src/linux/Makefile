@@ -3,7 +3,7 @@ ifeq ($(KERNELRELEASE),)
 
 KERNEL_DIR ?= /lib/modules/$(shell uname -r)/build
 
-all: libxt_coova.so
+all: 
 	make -C ${KERNEL_DIR} M=$$PWD;
 
 modules:
@@ -16,7 +16,7 @@ modules_clean:
 	make -C ${KERNEL_DIR} M=$$PWD $@;
 
 clean:
-	rm -f *.o *~ *.ko *.mod.c Module.markers modules.order Module.symvers libxt_coova.so
+	rm -f *.o *~ *.ko *.mod.c Module.markers modules.order Module.symvers 
 
 lib%.so: lib%.o
 	$(CC) $(CFLAGS) -shared -o $@ $^;
@@ -24,9 +24,9 @@ lib%.so: lib%.o
 lib%.o: lib%.c
 	$(CC) $(CFLAGS) -fPIC -O2 -Wall -D_INIT=lib$*_init -c -o $@ $<;
 
-install: modules_install libxt_coova.so
+install: modules_install 
 	mkdir -p $(DESTDIR)/lib/xtables/
-	cp libxt_coova.so $(DESTDIR)/lib/xtables/
+	cp  $(DESTDIR)/lib/xtables/
 
 distdir:
 
